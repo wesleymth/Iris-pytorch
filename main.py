@@ -22,7 +22,7 @@ random.seed(0)
 np.random.seed(0)
 
 #device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-LR = 0.007163636363636364
+LR = 0.001
 BATCH_SIZE = 10
 EPOCHS = 100
 HIDDEN_LAYER = 50
@@ -42,13 +42,13 @@ def load_data(test_size=0.2):
 def get_data_as_dataloaders(train_ds : TensorDataset, test_ds : TensorDataset, batch_size : int):
     return (
         DataLoader(train_ds, batch_size, shuffle=True),
-        DataLoader(test_ds, batch_size=batch_size * 2),
+        DataLoader(test_ds, batch_size=batch_size),
     )
     
 
 class IrisClassifier(nn.Module):
     
-    def __init__(self, hidden1_dim, input_dim=4, output_dim=3):
+    def __init__(self, hidden1_dim=50, input_dim=4, output_dim=3):
         super(IrisClassifier, self).__init__()
         self.layer1 = nn.Linear(input_dim, hidden1_dim)
         self.layer2 = nn.Linear(hidden1_dim, hidden1_dim)
@@ -66,7 +66,7 @@ class IrisClassifier(nn.Module):
         return z
 
 
-def fit(model, epochs, train_dataloader, test_dataloader, optimizer=None, criterion=nn.CrossEntropyLoss(), save_histories=True):
+def fit(model, epochs, train_dataloader, optimizer=None, criterion=nn.CrossEntropyLoss(), save_histories=True, test_dataloader=None):
     
     if save_histories:
         train_loss_history=np.zeros((epochs,))
@@ -238,7 +238,7 @@ def main():
     (train_loss_history,
     train_accuracy_history,
     test_loss_history,
-    test_accuracy_history) = fit(model, epochs, train_dataloader, test_dataloader, optimizer=opt, criterion=loss_function)
+    test_accuracy_history) = fit(model, epochs, train_dataloader, optimizer=opt, criterion=loss_function, save_histories=True, test_dataloader=test_dataloader)
     
     # save_csv_file(train_loss_history,train_accuracy_history, test_loss_history, test_accuracy_history)
     

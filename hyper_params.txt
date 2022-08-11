@@ -377,3 +377,128 @@ Parameter Group 0
     weight_decay: 0
 )
 #####################################################################################
+Run : 11-08-2022_10-55-38
+Batch size : 10
+epochs : 100
+final_train_loss : 0.7415633052587509
+final_train_accuracy : 0.3250000054637591
+final_test_loss : 0.6591673195362091
+final_test_accuracy : 0.4000000059604645
+model : IrisClassifier(
+  (layer1): Linear(in_features=4, out_features=50, bias=True)
+  (layer2): Linear(in_features=50, out_features=50, bias=True)
+  (layer3): Linear(in_features=50, out_features=3, bias=True)
+  (ReLU): ReLU()
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.05
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
+Run : 11-08-2022_10-59-59
+Batch size : 10
+epochs : 100
+final_train_loss : 0.07754167821258307
+final_train_accuracy : 0.9749999990065893
+final_test_loss : 0.036129810847342014
+final_test_accuracy : 1.0
+model : IrisClassifier(
+  (layer1): Linear(in_features=4, out_features=50, bias=True)
+  (layer2): Linear(in_features=50, out_features=50, bias=True)
+  (layer3): Linear(in_features=50, out_features=3, bias=True)
+  (ReLU): ReLU()
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.001
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
+Run : 11-08-2022_11-28-21
+Batch size : 10
+epochs : 100
+final_train_loss : 0.7415633052587509
+final_train_accuracy : 0.3250000054637591
+final_test_loss : 0.695787787437439
+final_test_accuracy : 0.36666667461395264
+model : IrisClassifier(
+  (layer1): Linear(in_features=4, out_features=50, bias=True)
+  (layer2): Linear(in_features=50, out_features=50, bias=True)
+  (layer3): Linear(in_features=50, out_features=3, bias=True)
+  (ReLU): ReLU()
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.05
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
+Run : 11-08-2022_11-28-43
+Batch size : 10
+epochs : 100
+final_train_loss : 0.07754167821258307
+final_train_accuracy : 0.9749999990065893
+final_test_loss : 0.027877289685420692
+final_test_accuracy : 1.0
+model : IrisClassifier(
+  (layer1): Linear(in_features=4, out_features=50, bias=True)
+  (layer2): Linear(in_features=50, out_features=50, bias=True)
+  (layer3): Linear(in_features=50, out_features=3, bias=True)
+  (ReLU): ReLU()
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.001
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
+Run : 11-08-2022_11-30-54
+Batch size : 10
+epochs : 100
+final_train_loss : 0.07754167821258307
+final_train_accuracy : 0.9749999990065893
+final_test_loss : 0.027877289685420692
+final_test_accuracy : 1.0
+model : IrisClassifier(
+  (layer1): Linear(in_features=4, out_features=50, bias=True)
+  (layer2): Linear(in_features=50, out_features=50, bias=True)
+  (layer3): Linear(in_features=50, out_features=3, bias=True)
+  (ReLU): ReLU()
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.001
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
