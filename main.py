@@ -1,7 +1,5 @@
-from calendar import EPOCH
 import random
 from datetime import datetime
-from webbrowser import get
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,37 +12,58 @@ import torch.optim as optim
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 import tqdm
-from tqdm.notebook import tqdm_notebook
 import pandas as pd
 
-torch.manual_seed(0)
-random.seed(0)
-np.random.seed(0)
-
-#device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-LR = 0.001
-BATCH_SIZE = 10
-EPOCHS = 100
-HIDDEN_LAYER = 50
-LOSS_FUNCTION = nn.CrossEntropyLoss()
-
-def load_data(test_size=0.2):
-    iris=load_iris()
-    X=iris.data
-    y=iris.target
-    y_names = iris.target_names
-    X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=test_size)
-    X_train, y_train, X_test, y_test = map(
-    torch.tensor, (X_train, y_train, X_test, y_test)
+from config import (
+    LR ,
+    BATCH_SIZE ,
+    EPOCHS ,
+    HIDDEN_LAYER ,
+    LOSS_FUNCTION ,
+    SEED_NUM,
+    TEST_SIZE,
+    VALID_SIZE,
     )
-    return X_train.float(),X_test.float(),y_train,y_test, y_names
 
-def get_data_as_dataloaders(train_ds : TensorDataset, test_ds : TensorDataset, batch_size : int):
-    return (
-        DataLoader(train_ds, batch_size, shuffle=True),
-        DataLoader(test_ds, batch_size=batch_size),
-    )
+torch.manual_seed(SEED_NUM)
+random.seed(SEED_NUM)
+np.random.seed(SEED_NUM)
+
+
+def get_iris_names():
+    return load_iris().target_names
     
+def load_data():
+    iris=load_iris()
+    return iris.data, iris.target
+
+def convert_data_to_tensordataset(X : np.ndarray, y : np.ndarray):
+    X, y = map(torch.tensor,(X, y))
+    X = X.float()
+    dataset = TensorDataset(X, y)
+    return dataset
+
+def convert_data_to_dataloader(X : np.ndarray, y : np.ndarray, batch_size=BATCH_SIZE, shuffle=False):
+    tensor_dataset = convert_data_to_tensordataset(X,y)
+    return DataLoader(tensor_dataset, batch_size=batch_size, shuffle=shuffle)
+
+def convert_data_to_dataloaders(X: np.ndarray, y: np.ndarray, test_size: float = TEST_SIZE, batch_size=BATCH_SIZE):
+    X1, X2, y1, y2 = train_test_split(X, y, test_size=test_size)
+    return (convert_data_to_dataloader(X1, y1, batch_size, shuffle=True), 
+            convert_data_to_dataloader(X2, y2, batch_size, shuffle=False))
+
+def get_dataloaders(test_size: float = TEST_SIZE, batch_size : int = BATCH_SIZE):
+    X, y = load_data()
+    return convert_data_to_dataloaders(X, y , test_size=test_size, batch_size=batch_size)
+    
+def split_get_dataloaders(split_size: float = VALID_SIZE,test_size: float = TEST_SIZE, batch_size : int = BATCH_SIZE):
+    X, y = load_data()
+    X, X_split, y, y_split = train_test_split(X, y, test_size=split_size)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    return (convert_data_to_dataloader(X_train, y_train, batch_size, shuffle=True), 
+            convert_data_to_dataloader(X_test, y_test, batch_size, shuffle=False),
+            convert_data_to_dataloader(X_split, y_split, batch_size, shuffle=False)
+            )
 
 class IrisClassifier(nn.Module):
     
@@ -66,67 +85,13 @@ class IrisClassifier(nn.Module):
         return z
 
 
-def fit(model, epochs, train_dataloader, optimizer=None, criterion=nn.CrossEntropyLoss(), save_histories=True, test_dataloader=None):
-    
-    if save_histories:
-        train_loss_history=np.zeros((epochs,))
-        train_accuracy_history=np.zeros((epochs,))
-        test_loss_history=np.zeros((epochs,))
-        test_accuracy_history=np.zeros((epochs,))
-    
-    if optimizer == None: 
-        optimizer=optim.Adam(model.parameters(), lr=0.01)
-    
-    #for epoch in range(epochs):  
-    for epoch in tqdm.trange(epochs) : #tqdm.trange(epochs) #tqdm_notebook(range(epochs))
-        model.train() # Training the model
-        for x_training_batches, y_training_labels in train_dataloader:
-            
-            output = model(x_training_batches.float())
-            train_loss = criterion(output, y_training_labels)
 
-            # Zero gradients
-            train_loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-
-            if save_histories:
-                with torch.no_grad():
-                    # Save the loss of the training set at each epoch
-                    train_loss_history[epoch] += train_loss.item()
-                    train_accuracy_history[epoch] += get_batch_classification_accuracy(output,y_training_labels)
-        
-        model.eval() # Evaluating the model
-        
-        if save_histories:
-            for x_test_batches, y_test_labels in test_dataloader:
-                with torch.no_grad():
-                    test_output = model(x_test_batches)
-                    test_loss = criterion(test_output, y_test_labels)
-                    test_loss_history[epoch] += test_loss.item()
-                    
-                    test_accuracy_history[epoch] += get_batch_classification_accuracy(test_output,y_test_labels)
-        
-    if save_histories: 
-        number_train_batches = len(train_dataloader)
-        number_test_batches = len(test_dataloader)
-                    
-        train_loss_history /= number_train_batches
-        train_accuracy_history /= number_train_batches
-        test_loss_history /= number_test_batches
-        test_accuracy_history /= number_test_batches
-        
-        return (train_loss_history,
-                train_accuracy_history,
-                test_loss_history,
-                test_accuracy_history)
-
-def get_batch_classification_accuracy(output, truth):
-    return float(sum(torch.max(output, 1)[1] == truth)/truth.shape[0])
-    prediction = torch.max(output, 1)[1] # get the index of the max log-probability
-    size = truth.shape[0]
-    percentage_correct = float(sum(prediction == truth)/size)
-    return percentage_correct
+# def get_batch_classification_accuracy(output, truth):
+#     return float(sum(torch.max(output, 1)[1] == truth)/truth.shape[0])
+#     prediction = torch.max(output, 1)[1] # get the index of the max log-probability
+#     size = truth.shape[0]
+#     percentage_correct = float(sum(prediction == truth)/size)
+#     return percentage_correct
 
 def save_csv_file(train_loss_history,train_accuracy_history, test_loss_history, test_accuracy_history,
                   #lr, batch_size, epochs, momentum, network_architecture
@@ -135,7 +100,6 @@ def save_csv_file(train_loss_history,train_accuracy_history, test_loss_history, 
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     dict = {"train_loss_history": train_loss_history, "train_accuracy_history": train_accuracy_history,
         "test_loss_history": test_loss_history, "test_accuracy_history": test_accuracy_history} 
-        #"lr" : lr, "batch_size" : batch_size, "epochs" : epochs, "momentum" : momentum, "network_architecture" : network_architecture}
     
     df = pd.DataFrame(dict)
     df.to_csv(f'{dt_string}.csv')
@@ -147,20 +111,107 @@ def predict_iris_class(model, features, target_names):
         prediction_name = target_names[prediction]
     return prediction_name
 
-def test(model, data_loader):
+def test(model, data_loader, return_loss = False, criterion = None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
     correct = 0
     total = 0
     with torch.no_grad():
+        if return_loss and criterion != None: #######@
+            running_loss = 0.0 #######@
         for batch_idx, (data, target) in enumerate(data_loader):
             data, target = data.to(device), target.to(device)
             outputs = model(data)
             _, predicted = torch.max(outputs.data, 1)
             total += target.size(0)
             correct += (predicted == target).sum().item()
+            
+            if return_loss and criterion != None: #######@
+                loss = criterion(outputs, target) ########
+                #batch_size = data.size(0) ########
+                running_loss += loss.item() #* batch_size #######@
+    if return_loss and criterion != None: #######@
+        return correct / total, running_loss / len(data_loader) #######@
+    
+    return correct / total
+    
 
-    return round(correct / total,4)*100
+def train(model, optimizer, criterion, train_loader):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.train()
+    running_loss = 0.0 #######@
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        
+        #batch_size = data.size(0) ########
+        running_loss += loss.item() #* batch_size #######@
+    return running_loss / (len(train_loader))#*batch_size) ########
+    
+        
+def train_model(model, num_epochs, criterion, optimizer, train_loader, test_loader, train_only=False):
+    history = {'train_acc' : [], 
+               'train_loss' : [],
+               'test_acc' : [],
+               'test_loss' : []
+               }
+    for epoch in tqdm.trange(num_epochs):
+        train(model, optimizer, criterion, train_loader)
+        history['train_loss'].append(train(model, optimizer, criterion, train_loader))
+        history['train_acc'].append(test(model, train_loader))
+        if not(train_only):
+            test_acc, test_loss = test(model, test_loader, return_loss=True, criterion=criterion)
+            history['test_loss'].append(test_loss)
+            history['test_acc'].append(test_acc)
+        else:
+            history['test_loss'].append('train_only=True')
+            history['test_acc'].append('train_only=True')
+    
+    return history
+        
+
+# def train_model(model, criterion, optimizer, scheduler, num_epochs=10):
+ 
+#     for epoch in range(num_epochs):
+#         print(f'Epoch {epoch}/{num_epochs - 1}')
+#         print('-' * 10)
+ 
+#         model.train()  # Set model to training mode
+         
+#         running_loss = 0.0
+ 
+#             # Iterate over data.
+#         for inputs, labels in dataloaders:
+             
+#             inputs = inputs.to(device)
+#             labels = labels.to(device)
+ 
+#             # zero the parameter gradients
+#             optimizer.zero_grad()
+ 
+#             outputs = model(inputs)
+#             _, preds = torch.max(outputs, 1)
+             
+#             loss = criterion(outputs, labels)
+ 
+#             # backward + optimize only if in training phase
+#             loss.backward()
+#             optimizer.step()
+                  
+#             # statistics
+#             running_loss += loss.item() * inputs.size(0)
+                  
+#             scheduler.step()
+ 
+#         epoch_loss = running_loss / dataset_sizes
+         
+#         print(f' Loss: {epoch_loss:.4f} ')
+        
+
         
     
 def save_hyper_parameters(
@@ -218,50 +269,38 @@ def plot_loss_accuracy_over_epoch(train_loss_history,train_accuracy_history, tes
     plt.savefig(datetime.now().strftime("%d-%m-%Y_%H-%M-%S"))
     
 def main():
-    #device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    lr = LR
-    batch_size = BATCH_SIZE
-    epochs = EPOCHS
-    momentum = 0.9
-    hidden_nums = HIDDEN_LAYER
-
-    X_train, X_test,y_train,y_test, y_names = load_data()
-    train_dataset = TensorDataset(X_train, y_train)
-    test_dataset = TensorDataset(X_test, y_test)
-    train_dataloader, test_dataloader = get_data_as_dataloaders(train_dataset, test_dataset, batch_size)
-
-    model = IrisClassifier(hidden_nums)
-    #opt = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
-    opt = optim.Adam(model.parameters(), lr=lr)
-    loss_function = LOSS_FUNCTION
     
-    (train_loss_history,
-    train_accuracy_history,
-    test_loss_history,
-    test_accuracy_history) = fit(model, epochs, train_dataloader, optimizer=opt, criterion=loss_function, save_histories=True, test_dataloader=test_dataloader)
+    train_dataloader, test_dataloader = get_dataloaders()
+    
+    model = IrisClassifier(HIDDEN_LAYER)
+    #opt = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.Adam(model.parameters(), lr=LR)
+    
+    # (train_loss_history,
+    # train_accuracy_history,
+    # test_loss_history,
+    # test_accuracy_history) = fit(model, epochs, train_dataloader, optimizer=opt, criterion=loss_function, save_histories=True, test_dataloader=test_dataloader)
+    
+    history = train_model(model, EPOCHS, LOSS_FUNCTION, optimizer, train_dataloader, test_dataloader)
+    
     
     # save_csv_file(train_loss_history,train_accuracy_history, test_loss_history, test_accuracy_history)
     
-    save_hyper_parameters(
-    'hyper_params.txt',
-    batch_size, 
-    epochs, 
-    train_loss_history[-1], 
-    train_accuracy_history[-1],
-    test_loss_history[-1],
-    test_accuracy_history[-1],
-    model,
-    opt
-    )
+    # save_hyper_parameters(
+    # 'hyper_params.txt',
+    # BATCH_SIZE, 
+    # EPOCHS, 
+    # history['train_loss'][-1], 
+    # history['train_acc'][-1],
+    # history['test_loss'][-1],
+    # history['test_acc'][-1],
+    # model,
+    # optimizer
+    # )
     
-    prediction_test_index = random.randint(0,len(X_test))
-    predicted_class = predict_iris_class(model, X_test[prediction_test_index], y_names)
-    actual_class = y_names[y_test[prediction_test_index]]
-    print(f'Predicted class : {predicted_class}\nCorrect class : {actual_class}')
-    
-    print(f'Testing the model on the whole test set gives {test(model,test_dataloader)}% accuracy')
+    print(f'Testing the model on the whole test set gives {round(test(model,test_dataloader),4)*100}% accuracy')
 
-    plot_loss_accuracy_over_epoch(train_loss_history,train_accuracy_history, test_loss_history, test_accuracy_history)
+    plot_loss_accuracy_over_epoch(history['train_loss'],history['train_acc'], history['test_loss'], history['test_acc'])
     
 
 if __name__ == '__main__':
