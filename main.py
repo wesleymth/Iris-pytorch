@@ -84,6 +84,14 @@ class IrisClassifier(nn.Module):
         #z = F.softmax(z, dim=1)
         return z
 
+seq_model = nn.Sequential(
+    nn.Linear(4, 50),
+    nn.ReLU(),
+    nn.Linear(50, 50),
+    nn.ReLU(),
+    nn.Linear(50, 3),
+    #nn.ReLU()
+)
 
 
 # def get_batch_classification_accuracy(output, truth):
@@ -272,7 +280,8 @@ def main():
     
     train_dataloader, test_dataloader = get_dataloaders()
     
-    model = IrisClassifier(HIDDEN_LAYER)
+    #model = IrisClassifier(HIDDEN_LAYER)
+    model = seq_model
     #opt = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
     optimizer = optim.Adam(model.parameters(), lr=LR)
     
