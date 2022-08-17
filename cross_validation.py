@@ -28,6 +28,7 @@ from config import (
 
 from main import (
     IrisClassifier,
+    seq_model,
     load_data,
     test,
     train_model,
@@ -82,6 +83,7 @@ def main_CV():
     train_dl = convert_data_to_dataloader(X, y, BATCH_SIZE, shuffle=True)
     
     model = IrisClassifier(HIDDEN_LAYER)
+    #model = seq_model
     optimizer = optim.Adam(model.parameters(), lr=LR)
     
     histories_folds = train_model_with_CV(model, train_and_test_dataset, optimizer, BATCH_SIZE, NUM_FOLDS)

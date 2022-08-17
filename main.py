@@ -79,16 +79,20 @@ class IrisClassifier(nn.Module):
     def forward(self, x):
         z = self.ReLU(self.layer1(x))
         z = self.ReLU(self.layer2(z))
-        z = self.ReLU(self.layer3(z))
+        #z = self.ReLU(self.layer3(z))
+        z = self.layer3(z)
         #z = self.ReLU(self.layer4(z))
         #z = F.softmax(z, dim=1)
         return z
 
 seq_model = nn.Sequential(
+    #nn.Dropout(0.25),
     nn.Linear(4, 50),
     nn.ReLU(),
+    #nn.Dropout(0.25),
     nn.Linear(50, 50),
     nn.ReLU(),
+    #nn.Dropout(0.25),
     nn.Linear(50, 3),
     #nn.ReLU()
 )
@@ -168,7 +172,7 @@ def train_model(model, num_epochs, criterion, optimizer, train_loader, test_load
                'test_loss' : []
                }
     for epoch in tqdm.trange(num_epochs):
-        train(model, optimizer, criterion, train_loader)
+        #train(model, optimizer, criterion, train_loader)
         history['train_loss'].append(train(model, optimizer, criterion, train_loader))
         history['train_acc'].append(test(model, train_loader))
         if not(train_only):
@@ -295,17 +299,17 @@ def main():
     
     # save_csv_file(train_loss_history,train_accuracy_history, test_loss_history, test_accuracy_history)
     
-    # save_hyper_parameters(
-    # 'hyper_params.txt',
-    # BATCH_SIZE, 
-    # EPOCHS, 
-    # history['train_loss'][-1], 
-    # history['train_acc'][-1],
-    # history['test_loss'][-1],
-    # history['test_acc'][-1],
-    # model,
-    # optimizer
-    # )
+    save_hyper_parameters(
+    'hyper_params.txt',
+    BATCH_SIZE, 
+    EPOCHS, 
+    history['train_loss'][-1], 
+    history['train_acc'][-1],
+    history['test_loss'][-1],
+    history['test_acc'][-1],
+    model,
+    optimizer
+    )
     
     print(f'Testing the model on the whole test set gives {round(test(model,test_dataloader),4)*100}% accuracy')
 

@@ -142,14 +142,14 @@ def main_skorch():
     'batch_size' : [10, 64, 32]
     }
     
-    grid_search = GridSearchCV(net2, params, refit=False, cv=5, scoring='accuracy', verbose=3)
-    grid_search.fit(X, iris.target)
-    print(grid_search.best_score_, grid_search.best_params_)
+    # grid_search = GridSearchCV(net2, params, refit=False, cv=5, scoring='accuracy', verbose=3)
+    # grid_search.fit(X, iris.target)
+    # print(grid_search.best_score_, grid_search.best_params_)
     
-    # n_iter_search = 15
-    # random_search = RandomizedSearchCV(net2, params, refit=False, cv=3, scoring='accuracy', n_iter=n_iter_search)#, verbose=3)
-    # random_search.fit(X, iris.target)
-    # print(random_search.best_score_, random_search.best_params_)
+    n_iter_search = 15
+    random_search = RandomizedSearchCV(net2, params, refit=False, cv=3, scoring='accuracy', n_iter=n_iter_search)#, verbose=3)
+    random_search.fit(X, iris.target)
+    print(random_search.best_score_, random_search.best_params_)
 
     
 if __name__ == '__main__':
