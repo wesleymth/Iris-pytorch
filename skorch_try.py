@@ -1,5 +1,4 @@
 import random
-from tabnanny import verbose
 
 import numpy as np
 import matplotlib.pyplot as plt

@@ -72,7 +72,6 @@ def reset_weights(m):
     if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
         m.reset_parameters()
 
-
 def main_CV():
     X, y = load_data()
     X, X_valid, y, y_valid = train_test_split(X, y, test_size=VALID_SIZE)
@@ -89,7 +88,7 @@ def main_CV():
     histories_folds = train_model_with_CV(model, train_and_test_dataset, optimizer, BATCH_SIZE, NUM_FOLDS)
     
     for fold, history in enumerate(histories_folds):
-        print('For fold no{}, the final test accuracy was : {:.4f}%'.format(fold, history['test_acc'][-1]*100))
+        print('For fold no{}, the final test accuracy was : {:.4f}%'.format(fold+1, history['test_acc'][-1]*100))
     
     train_model(model, EPOCHS, LOSS_FUNCTION, optimizer, train_dl , test_loader=None, train_only=True)
     
