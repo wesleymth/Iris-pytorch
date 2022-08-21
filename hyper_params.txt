@@ -24,3 +24,29 @@ Parameter Group 0
     weight_decay: 0
 )
 #####################################################################################
+Run : 21-08-2022_18-47-53
+Batch size : 10
+epochs : 200
+final_train_loss : 0.08643687275859217
+final_train_accuracy : 0.975
+final_test_loss : 0.017283875844441354
+final_test_accuracy : 1.0
+model : Sequential(
+  (0): Linear(in_features=4, out_features=50, bias=True)
+  (1): ReLU()
+  (2): Linear(in_features=50, out_features=50, bias=True)
+  (3): ReLU()
+  (4): Linear(in_features=50, out_features=3, bias=True)
+)
+optimizer : Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    eps: 1e-08
+    foreach: None
+    lr: 0.001
+    maximize: False
+    weight_decay: 0
+)
+#####################################################################################
